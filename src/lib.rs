@@ -74,6 +74,8 @@ pub struct WsConnection {
     _io: Task<()>,
     sender: async_channel::Sender<Message>,
     receiver: async_channel::Receiver<Message>,
+    id: u32,
+    addr: std::net::SocketAddr,
 }
 
 pub use async_channel::TryRecvError as ReceiveError;
@@ -85,10 +87,27 @@ impl WsConnection {
     pub fn receive(&self) -> Result<Message, ReceiveError> {
         self.receiver.try_recv()
     }
+
+    pub fn id(&self) -> u32 {
+        self.id
+    }
+
+    pub fn addr(&self) -> std::net::SocketAddr {
+        self.addr
+    }
 }
 
-pub fn accept_ws_from_queue(mut commands: Commands, queue: ResMut<WsAcceptQueue>) {
+pub fn accept_ws_from_queue(
+    mut commands: Commands,
+    queue: ResMut<WsAcceptQueue>,
+    mut current_id: Local<u32>,
+) {
     for mut websocket in queue.ws_rx.try_iter() {
+        let id = *current_id;
+        *current_id += 1;
+
+        let addr = websocket.get_ref().peer_addr().unwrap();
+
         let (message_tx, io_message_rx) = async_channel::unbounded::<Message>();
         let (io_message_tx, message_rx) = async_channel::unbounded::<Message>();
 
@@ -118,6 +137,10 @@ pub fn accept_ws_from_queue(mut commands: Commands, queue: ResMut<WsAcceptQueue>
             _io: io,
             sender: message_tx,
             receiver: message_rx,
+            id,
+            addr,
         });
+
+        debug!("Connected {} as {}", addr, id);
     }
 }
