@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 bevy = { version = "0.15.0", default-features = false, features = [
-	"multi-threaded",
+	"multi_threaded",
 ] }
 async-net = "2.0.0"
 futures = "0.3.29"
