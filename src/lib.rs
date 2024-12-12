@@ -1,5 +1,5 @@
 use async_net::{AsyncToSocketAddrs, TcpListener, TcpStream};
-use async_tungstenite::tungstenite::Message;
+pub use async_tungstenite::tungstenite::Message;
 use async_tungstenite::WebSocketStream;
 use bevy::prelude::*;
 use bevy::tasks::{IoTaskPool, Task};
